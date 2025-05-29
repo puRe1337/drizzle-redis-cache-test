@@ -1,16 +1,29 @@
 import Keyv from "keyv";
 import KeyvRedis from "@keyv/redis";
 import { Cache } from "drizzle-orm/cache/core";
+import type { CacheConfig } from "drizzle-orm/cache/core/types";
+import { getTableName, Table } from "drizzle-orm/table";
+import { is } from "drizzle-orm";
 
 // modified example from https://orm.drizzle.team/docs/cache#cache
 export class RedisCache extends Cache {
-  private globalTtl: number = 1000;
+  private globalTtl: number = 1000 * 30; // 30s Ttl cache
   // This object will be used to store which query keys were used
   // for a specific table, so we can later use it for invalidation.
   private usedTablesPerKey: Record<string, string[]> = {};
 
-  constructor(private kv: Keyv = new Keyv({ store: new KeyvRedis({ url: 'redis://localhost:6379' }) })) {
+  private handleConnectionError(err: Error): void {
+    console.error("Redis connection error:", err);
+  }
+
+  constructor(private kv: Keyv = new Keyv({ store: new KeyvRedis({ url: 'redis://localhost:63791' }) })) {
     super();
+
+    kv.on('error', this.handleConnectionError);
+    const redisClient = kv.store.client;
+    redisClient.on('connect', () => {
+      console.log("RedisCache connected to Redis");
+    })
   }
 
   // For the strategy, we have two options:
@@ -40,6 +53,7 @@ export class RedisCache extends Cache {
     key: string,
     response: any,
     tables: string[],
+    isTag: boolean = false,
     config?: CacheConfig,
   ): Promise<void> {
     await this.kv.set(key, response, config ? config.ex : this.globalTtl);

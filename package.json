@@ -42,7 +42,7 @@
 	},
 	"dependencies": {
 		"@keyv/redis": "^4.4.0",
-		"drizzle-orm": "^0.40.0",
+		"drizzle-orm": "^0.44.0",
 		"keyv": "^5.3.3",
 		"postgres": "^3.4.5"
 	},

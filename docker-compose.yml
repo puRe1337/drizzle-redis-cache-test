@@ -19,6 +19,14 @@ services:
     volumes:
       - redisdata:/data
 
+  redisinsight:
+    image: redis/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+
 volumes:
   pgdata:
   redisdata:

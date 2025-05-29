@@ -15,7 +15,7 @@ services:
     image: redis
     restart: always
     ports:
-      - 6379:6379
+      - 63791:6379 # Bound to 63791 because 6379 is used by host redis
     volumes:
       - redisdata:/data
 
